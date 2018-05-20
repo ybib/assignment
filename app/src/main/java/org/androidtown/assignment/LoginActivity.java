@@ -67,9 +67,12 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                st_Id= edittext_id.getText().toString();
                 st_Pw= edittext_pw.getText().toString();
-
+                if(st_Id.isEmpty()||st_Id.equals("")||st_Pw.isEmpty()||st_Pw.equals("")){
+                    Toast.makeText(LoginActivity.this,"입력주세요",Toast.LENGTH_SHORT).show();
+                }else {
+                    userLogin(st_Id, st_Pw);
+                }
                 Toast.makeText(LoginActivity.this,st_Id+","+st_Pw, Toast.LENGTH_SHORT).show();
-                userLogin(st_Id,st_Pw);
             }
         });
 
@@ -79,9 +82,14 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 st_Id= edittext_id.getText().toString();
                 st_Pw= edittext_pw.getText().toString();
+                if(st_Id.isEmpty()||st_Id.equals("")||st_Pw.isEmpty()||st_Pw.equals("")){
+                    Toast.makeText(LoginActivity.this,"입력주세요",Toast.LENGTH_SHORT).show();
+                }else{
+                    registerUser(st_Id,st_Pw);
+                }
                // Intent registerIntent = new Intent(LoginActivity.this,RegisterActivity.class);
                // LoginActivity.this.startActivity(registerIntent);
-                registerUser(st_Id,st_Pw);
+
             }
         });
     }

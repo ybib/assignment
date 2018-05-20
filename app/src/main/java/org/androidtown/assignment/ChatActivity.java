@@ -1,6 +1,5 @@
 package org.androidtown.assignment;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,12 +11,17 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Hashtable;
+import java.util.List;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -28,8 +32,10 @@ public class ChatActivity extends AppCompatActivity {
     EditText chat_space;
     Button btn_send;
     String user_id;
+    List<Chatdata> mChatdata;
 
-    String[] myDataset = {"안녕","밥은 먹었니?","영화볼래?"};
+    String[] myDataset;
+    FirebaseDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,17 +45,11 @@ public class ChatActivity extends AppCompatActivity {
         chat_space = (EditText) findViewById(R.id.chat_space);
         btn_send = (Button) findViewById(R.id.btn_send);
 
+        database = FirebaseDatabase.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // Name, email address, and profile photo Url
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
-
-            // The user's ID, unique to the Firebase project. Do NOT use this value to
-            // authenticate with your backend server, if you have one. Use
-            // FirebaseUser.getToken() instead.
-            user_id = user.getUid();
+            user_id = user.getEmail();
         }
 
         btn_send.setOnClickListener(new View.OnClickListener() {
@@ -65,15 +65,14 @@ public class ChatActivity extends AppCompatActivity {
                     SimpleDateFormat df = new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss"));
                     String formattedDate = df.format(c.getTime());
 
-                    FirebaseDatabase database = FirebaseDatabase.getInstance();
                     DatabaseReference myRef = database.getReference("chatdata").child(formattedDate);
 
                     Hashtable<String, String> chat
                             = new Hashtable<String, String>();
-                    chat.put("ID", user_id);
+                    chat.put("user_id", user_id);
                     chat.put("text",send_text);
                     myRef.setValue(chat);
-
+                    chat_space.setText("");
                 }
             }
         });
@@ -87,10 +86,43 @@ public class ChatActivity extends AppCompatActivity {
         // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
+        mChatdata = new ArrayList<>();
+
 
         // specify an adapter (see also next example)
-        mAdapter = new MyAdapter(myDataset);
+        mAdapter = new MyAdapter(mChatdata,user_id);
         mRecyclerView.setAdapter(mAdapter);
+
+        DatabaseReference myRef = database.getReference("chatdata");
+
+        myRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Chatdata chatdata = dataSnapshot.getValue(Chatdata.class);
+
+                // [START_EXCLUDE]
+                // Update RecyclerView
+
+                mChatdata.add(chatdata);
+                mAdapter.notifyItemInserted(mChatdata.size() - 1);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
     }
 }

@@ -7,10 +7,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.List;
 
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     private String[] mDataset;
+    List<Chatdata> mChatdata;
+    String user_id;
+
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -26,17 +30,38 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(String[] myDataset) {
-        mDataset = myDataset;
+    public MyAdapter( List<Chatdata> mChatdata,String user_id) {
+        this.mChatdata = mChatdata;
+        this.user_id = user_id;  // 로그인한 유저아이디.
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        String check = mChatdata.get(position).getUser_id();
+        if(check.equals(user_id)){
+            return 1;
+        } else{
+            return 2;
+        }
     }
 
     // Create new views (invoked by the layout manager)
     @Override
     public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                    int viewType) {
+        View v;
+       /* View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.right_text_view, parent, false);*/
         // create a new view
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.my_text_view, parent, false);
+        if(viewType == 1){
+           v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.right_text_view, parent, false);
+        }else{
+            v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.my_text_view, parent, false);
+
+        }
+
 
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -47,13 +72,13 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.mTextView.setText(mDataset[position]);
+        holder.mTextView.setText(mChatdata.get(position).getText());
 
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mDataset.length;
+        return mChatdata.size();
     }
 }
