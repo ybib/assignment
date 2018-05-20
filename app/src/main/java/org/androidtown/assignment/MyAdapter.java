@@ -11,7 +11,7 @@ import java.util.List;
 
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
-    private String[] mDataset;
+
     List<Chatdata> mChatdata;
     String user_id;
 

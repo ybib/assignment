@@ -19,7 +19,8 @@
         <activity android:name=".MenuActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".TimeTable" />
-        <activity android:name=".ChatActivity"></activity>
+        <activity android:name=".ChatActivity" />
+        <activity android:name=".ListAcivity"></activity>
     </application>
 
 </manifest>

@@ -33,8 +33,6 @@ public class ChatActivity extends AppCompatActivity {
     Button btn_send;
     String user_id;
     List<Chatdata> mChatdata;
-
-    String[] myDataset;
     FirebaseDatabase database;
 
     @Override
