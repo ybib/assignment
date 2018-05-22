@@ -73,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
                     userLogin(st_Id, st_Pw);
                 }
                 Toast.makeText(LoginActivity.this,st_Id+","+st_Pw, Toast.LENGTH_SHORT).show();
+
             }
         });
 

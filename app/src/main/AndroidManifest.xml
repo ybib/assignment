@@ -22,5 +22,4 @@
         <activity android:name=".ChatActivity" />
         <activity android:name=".ListAcivity"></activity>
     </application>
-
 </manifest>

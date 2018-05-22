@@ -8,50 +8,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:681832134556:android:19d499d246384830",
-        "android_client_info": {
-          "package_name": "org.android.parcelable"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "681832134556-64mt2gmtdqq2dqum2l199djutbdjh02i.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "org.android.parcelable",
-            "certificate_hash": "9ae9290ab9185ac76cf059a7490d5919fe35ccb9"
-          }
-        },
-        {
-          "client_id": "681832134556-m15t4nkuq35ac0r20l3pfp2nklkvc45u.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCecyaZm8T-FP015eKdbAFvliE7FhthRAg"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "681832134556-m15t4nkuq35ac0r20l3pfp2nklkvc45u.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:681832134556:android:4bb9e49d2ac37293",
         "android_client_info": {
           "package_name": "org.androidtown.assignment"
