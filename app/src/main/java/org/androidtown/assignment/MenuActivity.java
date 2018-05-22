@@ -43,6 +43,16 @@ public class MenuActivity extends AppCompatActivity {
             }
         });
 
+        Button posintgBoard_btn = (Button) findViewById(R.id.posintgBoard_btn);
+        posintgBoard_btn.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                Intent postingintent = new Intent(MenuActivity.this, ListAcivity.class);
+                MenuActivity.this.startActivity(postingintent);
+            }
+
+        });
+
+
 
         //Intent passedIntent = getIntent();
         //  processIntent(passedIntent);

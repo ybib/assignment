@@ -6,8 +6,9 @@
     android:layout_height="match_parent"
     tools:context="org.androidtown.assignment.MenuActivity"
     android:orientation="vertical">
+
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/posintgBoard_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="게시판"

@@ -5,7 +5,7 @@ package org.androidtown.assignment;
  */
 
 public class Member_list {
-    public String ID;
+    public String memberlist;
     public String mapped_trainer;
 
 
@@ -18,10 +18,10 @@ public class Member_list {
     }
 
     public String getUser_id() {
-        return ID;
+        return memberlist;
     }
     public void setUser_id(String ID) {
-        this.ID = ID;
+        this.memberlist = memberlist;
     }
     public String getText() {
         return mapped_trainer;
