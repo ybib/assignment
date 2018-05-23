@@ -5,29 +5,21 @@ package org.androidtown.assignment;
  */
 
 public class Member_list {
-    public String memberlist;
-    public String mapped_trainer;
-
+    public String[] memberlist;
 
     public Member_list() {
         // Default constructor required for calls to DataSnapshot.getValue(Comment.class)
     }
 
-    public Member_list(String text) {
-        this.mapped_trainer = mapped_trainer;
-    }
-
-    public String getUser_id() {
-        return memberlist;
-    }
-    public void setUser_id(String ID) {
+    public Member_list(String[] memberlist) {
         this.memberlist = memberlist;
     }
-    public String getText() {
-        return mapped_trainer;
+    public String[] getMemberlist() {
+        return memberlist;
+    }
+    public void setMemberlist(String[] memberlist) {
+        this.memberlist = memberlist;
     }
 
-    public void setText(String text) {
-        this.mapped_trainer = mapped_trainer;
-    }
+
 }

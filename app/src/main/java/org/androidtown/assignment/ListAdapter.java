@@ -11,10 +11,8 @@ import java.util.List;
 
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
-
     List<Member_list> mMember_list;
     String user_id;
-
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -35,15 +33,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
         //this.user_id = user_id;  // 로그인한 유저아이디.
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        String check = mMember_list.get(position).getUser_id();
-        if(check.equals(user_id)){
-            return 1;
-        } else{
-            return 2;
-        }
-    }
 
     // Create new views (invoked by the layout manager)
     @Override
@@ -62,7 +51,10 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.member.setText(mMember_list.get(position).getUser_id());
+        String[] temp = mMember_list.get(position).getMemberlist();
+        holder.member.setText(temp[0]);
+        //holder.member.setText(mMember_list.get(position).getText());
+
 
     }
 

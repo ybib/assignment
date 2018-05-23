@@ -41,8 +41,6 @@ public class ChatActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_chat);
 
-
-
         chat_space = (EditText) findViewById(R.id.chat_space);
         btn_send = (Button) findViewById(R.id.btn_send);
 
@@ -107,19 +105,15 @@ public class ChatActivity extends AppCompatActivity {
                 mChatdata.add(chatdata);
                 mAdapter.notifyItemInserted(mChatdata.size() - 1);
             }
-
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
             }
-
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
             }
-
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }

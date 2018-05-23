@@ -45,6 +45,7 @@ public class ListAcivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_acivity);
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view_list);
+
         database = FirebaseDatabase.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -58,7 +59,8 @@ public class ListAcivity extends AppCompatActivity {
        // readSingleContact();
         //updateData();
         //deleteData();
-       // addRealtimeUpdate();
+        //addRealtimeUpdate();
+        readmemberlist();
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -77,6 +79,41 @@ public class ListAcivity extends AppCompatActivity {
 
     }
 
+    private void readmemberlist() {
+           DocumentReference contact = db.collection("customer").document(user_id).collection("memberlist").document("memberlist");
+           contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+               @Override
+               public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                   if (task.isSuccessful()) {
+                       DocumentSnapshot doc = task.getResult();
+                       if(doc.exists()) {
+                           StringBuilder data = new StringBuilder("");
+                           data.append("member: ").append(doc.getString("member1"));
+                           txtDisplay.setText(data.toString());
+                       }
+                       else{
+                           readSingleContact();
+                       }
+                   } else {
+                       Log.w(TAG, "Error getting documents.", task.getException());
+                   }
+               }
+           });
+
+
+        /*contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    DocumentSnapshot doc = task.getResult();
+                    StringBuilder data = new StringBuilder("");
+                    data.append("member: ").append(doc.getString("member1"));
+                    txtDisplay.setText(data.toString());
+                }
+            }
+        });*/
+
+    }
     private void addRealtimeUpdate() {
         DocumentReference contactListen = db.collection("AddressBook").document("1");
         contactListen.addSnapshotListener(new EventListener<DocumentSnapshot>() {
