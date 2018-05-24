@@ -1,7 +1,9 @@
 package org.androidtown.assignment;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -9,6 +11,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -16,6 +20,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,14 +39,23 @@ public class ChatActivity extends AppCompatActivity {
     EditText chat_space;
     Button btn_send;
     String user_id;
+    String user_key;
     List<Chatdata> mChatdata;
     FirebaseDatabase database;
+    FirebaseFirestore db;
+    String partener;
+    String partener_key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_chat);
+
+        db = FirebaseFirestore.getInstance();
+
+        Intent intent = getIntent();
+        partener=intent.getStringExtra("name");
+        Toast.makeText(this, partener+"와 대화", Toast.LENGTH_SHORT).show();
 
         chat_space = (EditText) findViewById(R.id.chat_space);
         btn_send = (Button) findViewById(R.id.btn_send);
@@ -49,7 +65,21 @@ public class ChatActivity extends AppCompatActivity {
         if (user != null) {
             // Name, email address, and profile photo Url
             user_id = user.getEmail();
+            user_key = user.getUid();
         }
+
+        DocumentReference contact = db.collection("customer").document(partener);
+        contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    DocumentSnapshot doc = task.getResult();
+                    partener_key = doc.getString("id");
+                }
+            }
+        });
+
+
 
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,15 +93,26 @@ public class ChatActivity extends AppCompatActivity {
                     Calendar c = Calendar.getInstance();
                     SimpleDateFormat df = new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss"));
                     String formattedDate = df.format(c.getTime());
+                    partener = user_id;
 
-                    DatabaseReference myRef = database.getReference("chatdata").child(formattedDate);
-
+                    //DatabaseReference myRef = database.getReference("chatdata").child(formattedDate);
+                    DatabaseReference myRef = database.getReference("users").child(user_key).child("chatdata").child(formattedDate);
+                   // DatabaseReference myRef = database.getReference("users").child(partener).child("chatdata").child(formattedDate);
+                    //DatabaseReference myRef = database.getReference("users").child(stChatid).child("chat").child(formattedDate);
                     Hashtable<String, String> chat
                             = new Hashtable<String, String>();
-                    chat.put("user_id", user_id);
+                    chat.put("ID", user_id);
                     chat.put("text",send_text);
                     myRef.setValue(chat);
                     chat_space.setText("");
+
+                    DatabaseReference myRef2 = database.getReference("users").child(partener_key).child("chatdata").child(formattedDate);
+                    Hashtable<String, String> chat2
+                            = new Hashtable<String, String>();
+                    chat2.put("ID", user_id);
+                    chat2.put("text",send_text);
+                    myRef2.setValue(chat2);
+
                 }
             }
         });
@@ -92,8 +133,9 @@ public class ChatActivity extends AppCompatActivity {
         mAdapter = new MyAdapter(mChatdata,user_id);
         mRecyclerView.setAdapter(mAdapter);
 
-        DatabaseReference myRef = database.getReference("chatdata");
-
+       // DatabaseReference myRef = database.getReference("chatdata");
+       // DatabaseReference myRef = database.getReference("users").child(partener).child("chatdata");
+        DatabaseReference myRef = database.getReference("users").child(user_key).child("chatdata");
         myRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {

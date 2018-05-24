@@ -1,11 +1,11 @@
 package org.androidtown.assignment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,29 +22,22 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ListAcivity extends AppCompatActivity {
 
-    RecyclerView mRecyclerView;
-    LinearLayoutManager  mLayoutManager;
     FirebaseFirestore db;
     TextView txtDisplay;
     String user_id;
     FirebaseDatabase database;
-
-    List<Member_list> mMember_list;
-    ListAdapter mAdapter;
+    String partener;
     String TAG = "ListAcivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_acivity);
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view_list);
 
         database = FirebaseDatabase.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -53,8 +46,10 @@ public class ListAcivity extends AppCompatActivity {
             user_id = user.getEmail();
         }
 
+
         db = FirebaseFirestore.getInstance();
         txtDisplay = (TextView) findViewById(R.id.txtDisplay);
+        //txtDisplay.setOnClickListener();
        // addNewContact();
        // readSingleContact();
         //updateData();
@@ -62,20 +57,15 @@ public class ListAcivity extends AppCompatActivity {
         //addRealtimeUpdate();
         readmemberlist();
 
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
-        mRecyclerView.setHasFixedSize(true);
+        txtDisplay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent in = new Intent(ListAcivity.this, ChatActivity.class);
+                in.putExtra("name",partener);
+                ListAcivity.this.startActivity(in);
+            }
+        });
 
-        // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mMember_list = new ArrayList<>();
-
-
-        // specify an adapter (see also next example)
-        //id와 email이 넘어가고.
-        mAdapter = new ListAdapter(mMember_list);
-        mRecyclerView.setAdapter(mAdapter);
 
     }
 
@@ -89,6 +79,7 @@ public class ListAcivity extends AppCompatActivity {
                        if(doc.exists()) {
                            StringBuilder data = new StringBuilder("");
                            data.append("member: ").append(doc.getString("member1"));
+                           partener = doc.getString("member1");
                            txtDisplay.setText(data.toString());
                        }
                        else{
@@ -167,6 +158,7 @@ public class ListAcivity extends AppCompatActivity {
                     data.append("mappedtrainer: ").append(doc.getString("mappedtrainer"));
                     // data.append("\nEmail:").append(doc.getString("email"));
                     //  data.append("\nPhone:").append(doc.getString("phone"));
+                    partener = doc.getString("mappedtrainer");
                     txtDisplay.setText(data.toString());
                 }
             }
