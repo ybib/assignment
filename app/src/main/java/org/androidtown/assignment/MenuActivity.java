@@ -30,7 +30,7 @@ public class MenuActivity extends AppCompatActivity {
         button4.setOnClickListener(new View.OnClickListener(){
             public void onClick(View view){
                 Intent intent = new Intent(getApplicationContext(),TimeTable.class);
-                startActivityForResult(intent,105);
+                MenuActivity.this.startActivity(intent);
             }
         });
 

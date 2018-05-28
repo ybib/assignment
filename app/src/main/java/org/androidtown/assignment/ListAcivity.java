@@ -92,17 +92,6 @@ public class ListAcivity extends AppCompatActivity {
            });
 
 
-        /*contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
-                    DocumentSnapshot doc = task.getResult();
-                    StringBuilder data = new StringBuilder("");
-                    data.append("member: ").append(doc.getString("member1"));
-                    txtDisplay.setText(data.toString());
-                }
-            }
-        });*/
 
     }
     private void addRealtimeUpdate() {
