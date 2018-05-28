@@ -1,5 +1,6 @@
 package org.androidtown.assignment;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -40,7 +41,7 @@ public class TimeTable extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_time_table);
 
-        txtDisplay = (TextView) findViewById(R.id.mon0);
+        readTextView();
         db = FirebaseFirestore.getInstance();
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -93,15 +94,67 @@ public class TimeTable extends AppCompatActivity {
                             Log.d(TAG,"check:"+doc2.get("mon"));
                             String temp = doc2.get("mon").toString();
                             String monday[] = new String[14];
+                            readscheduler(monday,temp);
 
-                            StringBuilder id  = new StringBuilder("");
+                            String tuseday[] = new String[14];
+                            temp = doc2.get("tue").toString();
+                            readscheduler(tuseday,temp);
+
+                            String wednesday[] = new String[14];
+                            temp = doc2.get("wed").toString();
+                            readscheduler(wednesday,temp);
+
+                         /*   String thursday[] = new String[14];
+                            temp = doc2.get("thr").toString();
+                            readscheduler(thursday,temp);
+
+                            String friday[] = new String[14];
+                            temp = doc2.get("fri").toString();
+                            readscheduler(friday,temp);
+
+                            String saturday[] = new String[14];
+                            temp = doc2.get("sat").toString();
+                            readscheduler(saturday,temp);
+
+                            String sunday[] = new String[14];
+                            temp = doc2.get("sun").toString();
+                            readscheduler(sunday,temp);*/
+
+                         /*   StringBuilder id  = new StringBuilder("");
                            for(int i=0;i<temp.length();i++){
                                if(temp.charAt(i)=='['|| temp.charAt(i)==']'|| temp.charAt(i)==' ')
                                    continue;
                                Log.d(TAG,temp.charAt(i)+" ");
-                           }
+                           }*/
 
-                            Toast.makeText(TimeTable.this,"전달:"+monday[0],Toast.LENGTH_SHORT).show();
+                        /*   int j=0;
+                           for(int i=0;i<14;i++){
+                               StringBuilder reservation = new StringBuilder("");
+                               for(;j<temp.length();j++){
+                                   if(temp.charAt(j)=='['|| temp.charAt(j)==']'){
+                                       continue;
+                                   }
+
+                                  else if(temp.charAt(j) !=','){
+                                       reservation.append(temp.charAt(j));
+                                   }
+
+                               }
+                               monday[i] = reservation.toString();
+                           }*/
+
+                           for(int i=0;i<14;i++) {
+                               Log.d(TAG,monday[i]);
+                               mon[i].setText(monday[i]);
+                               mon[i].setTextColor(Color.parseColor("#000000"));
+
+                               tue[i].setText(tuseday[i]);
+                               tue[i].setTextColor(Color.parseColor("#000000"));
+
+                               wed[i].setText(wednesday[i]);
+                               wed[i].setTextColor(Color.parseColor("#000000"));
+
+                           }
 
                         }
                     });
@@ -113,5 +166,77 @@ public class TimeTable extends AppCompatActivity {
 
 
     }
+
+    private void readscheduler(String[] day,String temp){
+        int j=0;
+        for(int i=0;i<14;i++){
+            StringBuilder reservation = new StringBuilder("");
+
+            for(;j<temp.length();j++){
+                if(temp.charAt(j)=='['|| temp.charAt(j)==']'){
+                    continue;
+                }
+                if(temp.charAt(j)==','){
+                    j++;
+                    break;
+                }
+                else if(temp.charAt(j) !=',' || temp.charAt(j)==' ' ){
+                    reservation.append(temp.charAt(j));
+                }
+
+            }
+            day[i] = reservation.toString();
+        }
+    }
+    private void readTextView(){
+        mon[0] = (TextView) findViewById(R.id.mon0);
+        mon[1] = (TextView) findViewById(R.id.mon1);
+        mon[2] = (TextView) findViewById(R.id.mon2);
+        mon[3] = (TextView) findViewById(R.id.mon3);
+        mon[4] = (TextView) findViewById(R.id.mon4);
+        mon[5] = (TextView) findViewById(R.id.mon5);
+        mon[6] = (TextView) findViewById(R.id.mon6);
+        mon[7] = (TextView) findViewById(R.id.mon7);
+        mon[8] = (TextView) findViewById(R.id.mon8);
+        mon[9] = (TextView) findViewById(R.id.mon9);
+        mon[10] = (TextView) findViewById(R.id.mon10);
+        mon[11] = (TextView) findViewById(R.id.mon11);
+        mon[12] = (TextView) findViewById(R.id.mon12);
+        mon[13] = (TextView) findViewById(R.id.mon13);
+
+        tue[0] = (TextView) findViewById(R.id.tue0);
+        tue[1] = (TextView) findViewById(R.id.tue1);
+        tue[2] = (TextView) findViewById(R.id.tue2);
+        tue[3] = (TextView) findViewById(R.id.tue3);
+        tue[4] = (TextView) findViewById(R.id.tue4);
+        tue[5] = (TextView) findViewById(R.id.tue5);
+        tue[6] = (TextView) findViewById(R.id.tue6);
+        tue[7] = (TextView) findViewById(R.id.tue7);
+        tue[8] = (TextView) findViewById(R.id.tue8);
+        tue[9] = (TextView) findViewById(R.id.tue9);
+        tue[10] = (TextView) findViewById(R.id.tue10);
+        tue[11] = (TextView) findViewById(R.id.tue11);
+        tue[12] = (TextView) findViewById(R.id.tue12);
+        tue[13] = (TextView) findViewById(R.id.tue13);
+
+        wed[0] = (TextView) findViewById(R.id.wed0);
+        wed[1] = (TextView) findViewById(R.id.wed1);
+        wed[2] = (TextView) findViewById(R.id.wed2);
+        wed[3] = (TextView) findViewById(R.id.wed3);
+        wed[4] = (TextView) findViewById(R.id.wed4);
+        wed[5] = (TextView) findViewById(R.id.wed5);
+        wed[6] = (TextView) findViewById(R.id.wed6);
+        wed[7] = (TextView) findViewById(R.id.wed7);
+        wed[8] = (TextView) findViewById(R.id.wed8);
+        wed[9] = (TextView) findViewById(R.id.wed9);
+        wed[10] = (TextView) findViewById(R.id.wed10);
+        wed[11] = (TextView) findViewById(R.id.wed11);
+        wed[12] = (TextView) findViewById(R.id.wed12);
+        wed[13] = (TextView) findViewById(R.id.wed13);
+
+
+
+    }
+
 }
 
