@@ -75,6 +75,7 @@ public class ChatActivity extends AppCompatActivity {
                 if(task.isSuccessful()){
                     DocumentSnapshot doc = task.getResult();
                     partener_key = doc.getString("id");
+                    readchat();
                 }
             }
         });
@@ -93,12 +94,12 @@ public class ChatActivity extends AppCompatActivity {
                     Calendar c = Calendar.getInstance();
                     SimpleDateFormat df = new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss"));
                     String formattedDate = df.format(c.getTime());
-                    partener = user_id;
+
 
                     //DatabaseReference myRef = database.getReference("chatdata").child(formattedDate);
-                    DatabaseReference myRef = database.getReference("users").child(user_key).child("chatdata").child(formattedDate);
-                   // DatabaseReference myRef = database.getReference("users").child(partener).child("chatdata").child(formattedDate);
-                    //DatabaseReference myRef = database.getReference("users").child(stChatid).child("chat").child(formattedDate);
+                    //DatabaseReference myRef = database.getReference("users").child(user_key).child("chatdata").child(formattedDate);
+                    DatabaseReference myRef = database.getReference("users").child(user_key).child(partener_key).child("chatdata").child(formattedDate);
+
                     Hashtable<String, String> chat
                             = new Hashtable<String, String>();
                     chat.put("ID", user_id);
@@ -106,7 +107,7 @@ public class ChatActivity extends AppCompatActivity {
                     myRef.setValue(chat);
                     chat_space.setText("");
 
-                    DatabaseReference myRef2 = database.getReference("users").child(partener_key).child("chatdata").child(formattedDate);
+                    DatabaseReference myRef2 =  database.getReference("users").child(partener_key).child(user_key).child("chatdata").child(formattedDate);
                     Hashtable<String, String> chat2
                             = new Hashtable<String, String>();
                     chat2.put("ID", user_id);
@@ -133,9 +134,10 @@ public class ChatActivity extends AppCompatActivity {
         mAdapter = new MyAdapter(mChatdata,user_id);
         mRecyclerView.setAdapter(mAdapter);
 
-       // DatabaseReference myRef = database.getReference("chatdata");
-       // DatabaseReference myRef = database.getReference("users").child(partener).child("chatdata");
-        DatabaseReference myRef = database.getReference("users").child(user_key).child("chatdata");
+        //DatabaseReference myRef = database.getReference("users").child(user_key).child("chatdata");
+    }
+    private void readchat() {
+        DatabaseReference myRef = database.getReference("users").child(user_key).child(partener_key).child("chatdata");
         myRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -147,19 +149,24 @@ public class ChatActivity extends AppCompatActivity {
                 mChatdata.add(chatdata);
                 mAdapter.notifyItemInserted(mChatdata.size() - 1);
             }
+
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
             }
+
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
             }
+
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-
     }
+
+
 }
