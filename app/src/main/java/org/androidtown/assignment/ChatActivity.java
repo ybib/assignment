@@ -1,6 +1,7 @@
 package org.androidtown.assignment;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -45,11 +47,15 @@ public class ChatActivity extends AppCompatActivity {
     FirebaseFirestore db;
     String partener;
     String partener_key;
+    String partenr_name;
+    TextView nametxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        nametxt = (TextView) findViewById(R.id.name_text);
 
         db = FirebaseFirestore.getInstance();
 
@@ -75,11 +81,13 @@ public class ChatActivity extends AppCompatActivity {
                 if(task.isSuccessful()){
                     DocumentSnapshot doc = task.getResult();
                     partener_key = doc.getString("id");
+                    partenr_name = doc.getString("name");
+                    nametxt.setText(partenr_name);
+                    nametxt.setBackgroundColor(Color.parseColor("#3F51B5"));
                     readchat();
                 }
             }
         });
-
 
 
         btn_send.setOnClickListener(new View.OnClickListener() {
