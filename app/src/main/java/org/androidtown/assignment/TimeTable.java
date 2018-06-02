@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +55,12 @@ public class TimeTable extends AppCompatActivity {
         readtrainer();
 
         // Toast.makeText(TimeTable.this,"전달:"+trainer,Toast.LENGTH_SHORT).show();
+        mon[1].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
 
     }
@@ -150,44 +157,52 @@ public class TimeTable extends AppCompatActivity {
                                 Log.d(TAG,monday[i]);
                                 mon[i].setText(monday[i]);
                                 mon[i].setTextColor(Color.parseColor("#000000"));
-                                if(monday[i].length() > 10){
-                                    mon[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                if(monday[i].length() > 3){
+                                   // mon[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                    mon[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
                                 }
 
                                 tue[i].setText(tuseday[i]);
                                 tue[i].setTextColor(Color.parseColor("#000000"));
-                                if(tuseday[i].length() > 10){
-                                    tue[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                if(tuseday[i].length() > 3){
+                                   // tue[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                    tue[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
+
                                 }
 
                                 wed[i].setText(wednesday[i]);
                                 wed[i].setTextColor(Color.parseColor("#000000"));
-                                if(wednesday[i].length() > 10){
-                                    wed[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                if(wednesday[i].length() > 3){
+                                   // wed[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                    wed[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
                                 }
 
                                 thr[i].setText(thursday[i]);
                                 thr[i].setTextColor(Color.parseColor("#000000"));
-                                if(thursday[i].length() > 10){
-                                    thr[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                if(thursday[i].length() > 3){
+                                   // thr[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                    thr[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
                                 }
 
                                 fri[i].setText(friday[i]);
                                 fri[i].setTextColor(Color.parseColor("#000000"));
-                                if(friday[i].length() > 10){
-                                    fri[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                if(friday[i].length() > 3){
+                                    //fri[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                    fri[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
                                 }
 
                                 sat[i].setText(saturday[i]);
                                 sat[i].setTextColor(Color.parseColor("#000000"));
-                                if(saturday[i].length() > 10){
-                                    sat[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                if(saturday[i].length() > 3){
+                                   // sat[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                    sat[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
                                 }
 
                                 sun[i].setText(sunday[i]);
                                 sun[i].setTextColor(Color.parseColor("#000000"));
-                                if(wednesday[i].length() > 10){
-                                    sun[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                if(sunday[i].length() > 3){
+                                   // sun[i].setBackgroundColor(Color.parseColor("#FF0000"));
+                                    sun[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
                                 }
 
                             }

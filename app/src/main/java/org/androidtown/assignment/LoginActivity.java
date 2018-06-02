@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -20,6 +21,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class LoginActivity extends AppCompatActivity {
     private EditText edittext_id, edittext_pw;
     String TAG = "LoginActivity";
+    ProgressBar login_progress;
 
     String st_Id;
     String st_Pw;
@@ -33,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
+        login_progress = (ProgressBar) findViewById(R.id.login_progress);
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -110,6 +113,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void registerUser(String email, String password ){
+
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -134,6 +138,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void userLogin(String email, String password){
+        login_progress.setVisibility(View.VISIBLE);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -142,6 +147,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
                         if(task.isSuccessful()) {
+                            login_progress.setVisibility(View.GONE);
                             Intent menuIntent = new Intent(LoginActivity.this, MenuActivity.class);
                             LoginActivity.this.startActivity(menuIntent);
                         }

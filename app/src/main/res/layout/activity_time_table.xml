@@ -205,7 +205,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue1"
@@ -415,7 +416,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu3"
