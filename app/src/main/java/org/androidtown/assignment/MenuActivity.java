@@ -52,6 +52,15 @@ public class MenuActivity extends AppCompatActivity {
 
         });
 
+        Button btn_change_pw = (Button) findViewById(R.id.btn_change_pw);
+        btn_change_pw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent pwintent = new Intent(MenuActivity.this, PwchangeActivity.class);
+                MenuActivity.this.startActivity(pwintent);
+            }
+        });
+
 
 
         //Intent passedIntent = getIntent();

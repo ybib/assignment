@@ -21,6 +21,7 @@
         <activity android:name=".TimeTable" />
         <activity android:name=".ChatActivity" />
         <activity android:name=".ListAcivity" />
+        <activity android:name=".PwchangeActivity"></activity>
     </application>
 
 </manifest>

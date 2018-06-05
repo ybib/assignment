@@ -18,17 +18,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="시간표"
-        android:onClick="onButton1Clicked"
         />
     <Button
         android:id="@+id/chat_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="fake"
-        android:onClick="onButton1Clicked"
         />
     <Button
-        android:id="@+id/button6"
+        android:id="@+id/btn_change_pw"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="비밀번호 변경"

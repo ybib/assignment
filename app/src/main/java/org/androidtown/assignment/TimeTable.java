@@ -3,6 +3,7 @@ package org.androidtown.assignment;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -54,13 +55,61 @@ public class TimeTable extends AppCompatActivity {
         }
         readtrainer();
 
-        // Toast.makeText(TimeTable.this,"전달:"+trainer,Toast.LENGTH_SHORT).show();
-        mon[1].setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        for(int i=0; i<14;i++) {
+            mon[1].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+               /* Intent in = new Intent(ListAcivity.this, ChatActivity.class);
+                in.putExtra("name",partener);
+                ListAcivity.this.startActivity(in);*/
+                /*switch (v.getId()) {
+                    case R.id.mon1:
+                        new AlertDialog.Builder(TimeTable.this).setTitle("알람팝업").show();
+                        break;
+                }*/
+                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
 
-            }
-        });
+                }
+            });
+            tue[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                }
+            });
+            wed[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                }
+            });
+            thr[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                }
+            });
+            fri[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                }
+            });
+            sat[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                }
+            });
+            sun[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                }
+            });
+
+        }
+
 
 
     }
@@ -161,6 +210,7 @@ public class TimeTable extends AppCompatActivity {
                                    // mon[i].setBackgroundColor(Color.parseColor("#FF0000"));
                                     mon[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
                                 }
+
 
                                 tue[i].setText(tuseday[i]);
                                 tue[i].setTextColor(Color.parseColor("#000000"));
