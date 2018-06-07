@@ -111,7 +111,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue0"
@@ -122,7 +123,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed0"
@@ -133,7 +135,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu0"
@@ -144,7 +147,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri0"
@@ -155,7 +159,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat0"
@@ -166,7 +171,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun0"
@@ -177,7 +183,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -217,7 +224,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed1"
@@ -228,7 +236,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu1"
@@ -239,7 +248,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri1"
@@ -250,7 +260,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat1"
@@ -261,7 +272,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun1"
@@ -272,7 +284,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -300,7 +313,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue2"
@@ -311,7 +325,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed2"
@@ -322,7 +337,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu2"
@@ -333,7 +349,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri2"
@@ -344,7 +361,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat2"
@@ -355,7 +373,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun2"
@@ -366,7 +385,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -394,7 +414,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue3"
@@ -405,7 +426,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed3"
@@ -417,7 +439,7 @@
                 android:text="수"
                 android:textColor="#ffffff"
                 android:textStyle="bold"
-                android:gravity="center"/>
+                android:gravity="center" />
 
             <TextView
                 android:id="@+id/thu3"
@@ -428,7 +450,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri3"
@@ -439,7 +462,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat3"
@@ -450,7 +474,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun3"
@@ -461,7 +486,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -489,7 +515,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue4"
@@ -500,7 +527,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed4"
@@ -511,7 +539,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu4"
@@ -522,7 +551,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri4"
@@ -533,7 +563,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat4"
@@ -544,7 +575,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun4"
@@ -555,7 +587,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -583,7 +616,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue5"
@@ -594,7 +628,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed5"
@@ -605,7 +640,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu5"
@@ -616,7 +652,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri5"
@@ -627,7 +664,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat5"
@@ -638,7 +676,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun5"
@@ -649,7 +688,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -677,7 +717,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue6"
@@ -688,7 +729,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed6"
@@ -699,7 +741,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu6"
@@ -710,7 +753,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri6"
@@ -721,7 +765,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat6"
@@ -732,7 +777,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun6"
@@ -743,7 +789,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -771,7 +818,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue7"
@@ -782,7 +830,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed7"
@@ -793,7 +842,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu7"
@@ -804,7 +854,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri7"
@@ -815,7 +866,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat7"
@@ -826,7 +878,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun7"
@@ -837,7 +890,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -865,7 +919,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue8"
@@ -876,7 +931,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed8"
@@ -887,7 +943,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu8"
@@ -898,7 +955,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri8"
@@ -909,7 +967,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat8"
@@ -920,7 +979,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun8"
@@ -931,7 +991,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -959,7 +1020,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue9"
@@ -970,7 +1032,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed9"
@@ -981,7 +1044,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu9"
@@ -992,7 +1056,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri9"
@@ -1003,7 +1068,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat9"
@@ -1014,7 +1080,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun9"
@@ -1025,7 +1092,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -1053,7 +1121,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue10"
@@ -1064,7 +1133,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed10"
@@ -1075,7 +1145,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu10"
@@ -1086,7 +1157,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri10"
@@ -1097,7 +1169,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat10"
@@ -1108,7 +1181,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun10"
@@ -1119,7 +1193,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -1147,7 +1222,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue11"
@@ -1158,7 +1234,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed11"
@@ -1169,7 +1246,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu11"
@@ -1180,7 +1258,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri11"
@@ -1191,7 +1270,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat11"
@@ -1202,7 +1282,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun11"
@@ -1213,7 +1294,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -1241,7 +1323,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue12"
@@ -1252,7 +1335,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed12"
@@ -1263,7 +1347,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu12"
@@ -1274,7 +1359,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri12"
@@ -1285,7 +1371,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat12"
@@ -1296,7 +1383,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun12"
@@ -1307,7 +1395,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>
@@ -1335,7 +1424,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="월"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/tue13"
@@ -1346,7 +1436,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="화"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/wed13"
@@ -1357,7 +1448,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="수"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/thu13"
@@ -1368,7 +1460,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="목"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/fri13"
@@ -1379,7 +1472,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="금"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sat13"
@@ -1390,7 +1484,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="토"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/sun13"
@@ -1401,7 +1496,8 @@
                 android:background="@drawable/cell_shape"
                 android:text="일"
                 android:textColor="#ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"/>
 
 
         </TableRow>

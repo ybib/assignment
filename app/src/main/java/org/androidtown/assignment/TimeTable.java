@@ -65,60 +65,55 @@ public class TimeTable extends AppCompatActivity {
         }
         readtrainer();
 
+
         for(int i=0; i<14;i++) {
-            mon[1].setOnClickListener(new View.OnClickListener() {
+            mon[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-               /* Intent in = new Intent(ListAcivity.this, ChatActivity.class);
-                in.putExtra("name",partener);
-                ListAcivity.this.startActivity(in);*/
-                /*switch (v.getId()) {
-                    case R.id.mon1:
-                        new AlertDialog.Builder(TimeTable.this).setTitle("알람팝업").show();
-                        break;
-                }*/
-                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
-                   // Intent intent = new Intent(TimeTable.this, PopupActivity.class);
-                    //new AlertDialog(R.layout.activity_popup).setView(R.layout.activity_popup);
-                    //intent.putExtra("data", "Test Popup");ㅣㅣ
-                    //startActivityForResult(intent, 1);
-                    showDialog(DIALOG_TEXT);
+                    showDialog(v.getId());
                 }
             });
             tue[i].setOnClickListener(new View.OnClickListener() {
                 @Override
+
                 public void onClick(View v) {
-                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                    showDialog(v.getId());
                 }
             });
             wed[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                    //new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                    showDialog(v.getId());
                 }
             });
             thr[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                  // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                    showDialog(v.getId());
                 }
             });
             fri[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                    showDialog(v.getId());
                 }
             });
             sat[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                    showDialog(v.getId());
                 }
             });
             sun[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                    showDialog(v.getId());
                 }
             });
 
@@ -416,13 +411,11 @@ public class TimeTable extends AppCompatActivity {
 
     @Override
     @Deprecated
-    protected Dialog onCreateDialog(int id) {
+    protected Dialog onCreateDialog(final int id) {
         // 다이얼로그를 처음 생성할 때 호출됨
         Log.d("test", "onCreateDialog");
 
         // id 값에 따라서 다이얼로그를 구분해서 띄워줌
-        switch(id) {
-            case DIALOG_TEXT :
                 // 버튼 클릭시 AlertDialog 를 띄우기
                 AlertDialog.Builder builder
                         = new AlertDialog.Builder(TimeTable.this);
@@ -430,63 +423,22 @@ public class TimeTable extends AppCompatActivity {
                         .setMessage("예약하시겠습니까?")
                         .setPositiveButton("확인", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
+                                temp = which;
                                 Toast.makeText(getApplicationContext(),
                                         user_name + "으로 예약하겠슴",
                                         Toast.LENGTH_SHORT).show();
+                                TextView txt = (TextView) findViewById(id);
+                                txt.setText(user_name);
+                                txt.setBackgroundColor(getResources().getColor(R.color.colorpink));
+
+
                             }
                         })
                         .setNegativeButton("예약취소", null)
                         .setNeutralButton("취소", null);
 
                 return builder.create();
-
-            case DIALOG_LIST :
-                AlertDialog.Builder builder2
-                        = new AlertDialog.Builder(TimeTable.this);
-
-                final String str[] = {"사과","딸기","수박","배"};
-                builder2.setTitle("리스트 형식 다이얼로그 제목임")
-                        .setNegativeButton("취소", null)
-                        .setItems(str, // 리스트 목록에 사용할 배열
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        Toast.makeText(getApplicationContext(),
-                                                "선택된것은 : " + str[which],
-                                                Toast.LENGTH_SHORT).show();
-                                        dismissDialog(DIALOG_LIST);
-                                    }
-                                }); // 클릭 리스너
-                return builder2.create();
-
-            case DIALOG_RADIO :
-                AlertDialog.Builder builder3 =
-                        new AlertDialog.Builder(TimeTable.this);
-                final String str2[] = {"빨강","녹색","파랑"};
-                builder3.setTitle("SingleChoiceItems - 색을 고르세요")
-                        .setPositiveButton("선택완료",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        Toast.makeText(getApplicationContext(),
-                                                str2[temp] + "을 선택했음",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                })
-                        .setNegativeButton("취소", null)
-                        .setSingleChoiceItems
-                                (str2,// 리스트배열 목록
-                                        -1, // 기본 설정값
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog,
-                                                                int which) {
-                                                temp = which;
-                                            }
-                                        });    // 리스너
-
-                return builder3.create(); // 다이얼로그 생성한 객체 리턴
-        }
-
-        return super.onCreateDialog(id);
+        //return super.onCreateDialog(id);
     }
 
 
