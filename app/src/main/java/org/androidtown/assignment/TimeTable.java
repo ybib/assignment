@@ -34,6 +34,7 @@ public class TimeTable extends AppCompatActivity {
     private TextView sat[] = new TextView[14];
     private TextView sun[] = new TextView[14];
     String user_id;
+    String user_name;
     FirebaseDatabase database;
     String trainer;
     int temp; // 임시 전역변수 - singleChoiceItems 에서 선택항목 저장시 사용
@@ -79,7 +80,7 @@ public class TimeTable extends AppCompatActivity {
                    // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
                    // Intent intent = new Intent(TimeTable.this, PopupActivity.class);
                     //new AlertDialog(R.layout.activity_popup).setView(R.layout.activity_popup);
-                    //intent.putExtra("data", "Test Popup");
+                    //intent.putExtra("data", "Test Popup");ㅣㅣ
                     //startActivityForResult(intent, 1);
                     showDialog(DIALOG_TEXT);
                 }
@@ -150,6 +151,7 @@ public class TimeTable extends AppCompatActivity {
                 if(task.isSuccessful()){
                     DocumentSnapshot doc = task.getResult();
                     Log.d(TAG, doc.getId() + " => " + doc.getData());
+                    user_name = doc.getString("name");
                     trainer = doc.getString("mappedtrainer");
                     Toast.makeText(TimeTable.this,trainer, Toast.LENGTH_SHORT).show();
                     // Toast.makeText(TimeTable.this,"전달:"+trainer,Toast.LENGTH_SHORT).show();
@@ -424,11 +426,18 @@ public class TimeTable extends AppCompatActivity {
                 // 버튼 클릭시 AlertDialog 를 띄우기
                 AlertDialog.Builder builder
                         = new AlertDialog.Builder(TimeTable.this);
-                builder .setTitle("다이얼로그 제목임")
-                        .setMessage("안녕들하십니까?")
-                        .setPositiveButton("긍정", null)
-                        .setNegativeButton("부정", null)
-                        .setNeutralButton("중립", null);
+                builder
+                        .setMessage("예약하시겠습니까?")
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(getApplicationContext(),
+                                        user_name + "으로 예약하겠슴",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("예약취소", null)
+                        .setNeutralButton("취소", null);
+
                 return builder.create();
 
             case DIALOG_LIST :
