@@ -1,5 +1,7 @@
 package org.androidtown.assignment;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -34,6 +36,13 @@ public class TimeTable extends AppCompatActivity {
     String user_id;
     FirebaseDatabase database;
     String trainer;
+    int temp; // 임시 전역변수 - singleChoiceItems 에서 선택항목 저장시 사용
+
+    // 다이얼로그의 ID를 보기 좋은 상수로 선언해서 사용한다
+    final int DIALOG_TEXT = 1;
+    final int DIALOG_LIST = 2; // 리스트 형식의 다이얼로그 ID
+    final int DIALOG_RADIO= 3; // 하나만 선택할 수 있는 다이얼로그 ID
+
 
 
     TextView txtDisplay;
@@ -67,8 +76,12 @@ public class TimeTable extends AppCompatActivity {
                         new AlertDialog.Builder(TimeTable.this).setTitle("알람팝업").show();
                         break;
                 }*/
-                    new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
-
+                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
+                   // Intent intent = new Intent(TimeTable.this, PopupActivity.class);
+                    //new AlertDialog(R.layout.activity_popup).setView(R.layout.activity_popup);
+                    //intent.putExtra("data", "Test Popup");
+                    //startActivityForResult(intent, 1);
+                    showDialog(DIALOG_TEXT);
                 }
             });
             tue[i].setOnClickListener(new View.OnClickListener() {
@@ -398,5 +411,75 @@ public class TimeTable extends AppCompatActivity {
 
 
     }
+
+    @Override
+    @Deprecated
+    protected Dialog onCreateDialog(int id) {
+        // 다이얼로그를 처음 생성할 때 호출됨
+        Log.d("test", "onCreateDialog");
+
+        // id 값에 따라서 다이얼로그를 구분해서 띄워줌
+        switch(id) {
+            case DIALOG_TEXT :
+                // 버튼 클릭시 AlertDialog 를 띄우기
+                AlertDialog.Builder builder
+                        = new AlertDialog.Builder(TimeTable.this);
+                builder .setTitle("다이얼로그 제목임")
+                        .setMessage("안녕들하십니까?")
+                        .setPositiveButton("긍정", null)
+                        .setNegativeButton("부정", null)
+                        .setNeutralButton("중립", null);
+                return builder.create();
+
+            case DIALOG_LIST :
+                AlertDialog.Builder builder2
+                        = new AlertDialog.Builder(TimeTable.this);
+
+                final String str[] = {"사과","딸기","수박","배"};
+                builder2.setTitle("리스트 형식 다이얼로그 제목임")
+                        .setNegativeButton("취소", null)
+                        .setItems(str, // 리스트 목록에 사용할 배열
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Toast.makeText(getApplicationContext(),
+                                                "선택된것은 : " + str[which],
+                                                Toast.LENGTH_SHORT).show();
+                                        dismissDialog(DIALOG_LIST);
+                                    }
+                                }); // 클릭 리스너
+                return builder2.create();
+
+            case DIALOG_RADIO :
+                AlertDialog.Builder builder3 =
+                        new AlertDialog.Builder(TimeTable.this);
+                final String str2[] = {"빨강","녹색","파랑"};
+                builder3.setTitle("SingleChoiceItems - 색을 고르세요")
+                        .setPositiveButton("선택완료",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Toast.makeText(getApplicationContext(),
+                                                str2[temp] + "을 선택했음",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                        .setNegativeButton("취소", null)
+                        .setSingleChoiceItems
+                                (str2,// 리스트배열 목록
+                                        -1, // 기본 설정값
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog,
+                                                                int which) {
+                                                temp = which;
+                                            }
+                                        });    // 리스너
+
+                return builder3.create(); // 다이얼로그 생성한 객체 리턴
+        }
+
+        return super.onCreateDialog(id);
+    }
+
+
 
 }
