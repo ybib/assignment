@@ -1,7 +1,5 @@
 package org.androidtown.assignment;
 
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,10 +7,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -20,427 +20,3203 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import me.grantland.widget.AutofitTextView;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Transaction;
 
 public class TimeTable extends AppCompatActivity {
 
-    private AutofitTextView auto_temp;
-    private TextView mon[] = new TextView[14];
-    private TextView tue[] = new TextView[14];
-    private TextView wed[] = new TextView[14];
-    private TextView thr[] = new TextView[14];
-    private TextView fri[] = new TextView[14];
-    private TextView sat[] = new TextView[14];
-    private TextView sun[] = new TextView[14];
+    private Button[][] buttons=new Button[13][7];
     String user_id;
     String user_name;
     FirebaseDatabase database;
     String trainer;
-    int temp; // 임시 전역변수 - singleChoiceItems 에서 선택항목 저장시 사용
-
-    // 다이얼로그의 ID를 보기 좋은 상수로 선언해서 사용한다
-    final int DIALOG_TEXT = 1;
-    final int DIALOG_LIST = 2; // 리스트 형식의 다이얼로그 ID
-    final int DIALOG_RADIO= 3; // 하나만 선택할 수 있는 다이얼로그 ID
-
-
-
-    TextView txtDisplay;
-    String TAG = "Timetable";
+    String trainerName;
+    Button sup;
+    String TAG="Timetable";
     FirebaseFirestore db;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_time_table);
 
-        readTextView();
-        db = FirebaseFirestore.getInstance();
+        readButtons();
+        db=FirebaseFirestore.getInstance();
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            user_id = user.getEmail();
+        FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
+        if(user!=null) {
+            user_id=user.getEmail();
+
+            DocumentReference cont=db.collection("customerList").document(user_id);
+            cont.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()) {
+                        DocumentSnapshot docm=task.getResult();
+                        Log.d(TAG, docm.getId() + "=>" + docm.getData());
+                        user_name=docm.getString("name");
+                    }
+                }
+            });
         }
-        readtrainer();
-
-
-        for(int i=0; i<14;i++) {
-            mon[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showDialog(v.getId());
-                }
-            });
-            tue[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-
-                public void onClick(View v) {
-                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
-                    showDialog(v.getId());
-                }
-            });
-            wed[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
-                    showDialog(v.getId());
-                }
-            });
-            thr[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                  // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
-                    showDialog(v.getId());
-                }
-            });
-            fri[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
-                    showDialog(v.getId());
-                }
-            });
-            sat[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
-                    showDialog(v.getId());
-                }
-            });
-            sun[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                   // new AlertDialog.Builder(TimeTable.this).setTitle("확인").show();
-                    showDialog(v.getId());
-                }
-            });
-
-        }
-
-
-
+        readTrainer();
+        setButtonsListener();
     }
 
-    private void readschedule() {
-        DocumentReference contact = db.collection("customer").document(trainer);
-        contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
-                    DocumentSnapshot doc = task.getResult();
-                    Log.d(TAG, doc.getId() + " => " + doc.getData());
+    private void makeReservation(final String wd, int rt, String temp) {
+        StringBuilder sb=new StringBuilder("");
+        StringBuilder cusName=new StringBuilder("");
+        int dotCount=0;
+        int charCount=0;
+        sb.append(temp);
+        int yoil;
 
-                    // txtDisplay.setText(data.toString());*/
+        if(wd=="Mon") {
+            yoil=0;
+        } else if(wd=="Tue") {
+            yoil=1;
+        } else if(wd=="Wed") {
+            yoil=2;
+        } else if(wd=="Thu") {
+            yoil=3;
+        } else if(wd=="Fri") {
+            yoil=4;
+        } else if(wd=="Sat") {
+            yoil=5;
+        } else {
+            yoil=6;
+        }
+
+        for(int i=0; i<temp.length(); i++) {
+            if(dotCount==rt) {
+                for(int j=i; j<temp.length(); j++) {
+                    if(sb.charAt(j)!=',') {
+                        if(sb.charAt(j)!=' ') {
+                            cusName.append(sb.charAt(j));
+                        }
+                        charCount++;
+                    } else {
+                        break;
+                    }
                 }
+
+                String sName=cusName.toString();
+                if(charCount>1) {
+                    if(!sName.equals(user_name)) {
+                        new AlertDialog.Builder(TimeTable.this).setTitle("Already Reserved").show();
+                        return;
+                    } else {
+                        int Count=0;
+                        for(int k=0; k<temp.length(); k++) {
+                            if (Count == rt) {
+                                sb.delete(k, k + sName.length());
+                                break;
+                            }
+                            if(sb.charAt(k)==',') {
+                                Count++;
+                            }
+                        }
+
+                        final String guichan=sb.toString();
+                        final DocumentReference DRef=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                        db.runTransaction(new Transaction.Function<Void>() {
+                            @Override
+                            public Void apply(Transaction transaction) throws FirebaseFirestoreException {
+                                DocumentSnapshot snapshot = transaction.get(DRef);
+                                transaction.update(DRef, wd, guichan);
+
+                                return null;
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(TAG, "Transaction success!" + guichan);
+                            }
+                        })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.w(TAG, "Transaction failure.", e);
+                                    }
+                                });
+
+
+                        buttons[rt][yoil].setText(" ");
+                        buttons[rt][yoil].setBackgroundColor(Color.parseColor("#40000000"));
+                        new AlertDialog.Builder(TimeTable.this).setTitle("Reservation Canceled").show();
+                        return;
+                    }
+                }
+                sb.insert(i, user_name);
+                break;
             }
-        });
+            if(sb.charAt(i)==',') {
+                dotCount++;
+            }
+        }
+
+        //
+
+        final String makeRSV=sb.toString();
+        final DocumentReference col=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+        db.runTransaction(new Transaction.Function<Void>() {
+            @Override
+            public Void apply(Transaction transaction) throws FirebaseFirestoreException {
+                DocumentSnapshot snapshot = transaction.get(col);
+                transaction.update(col, wd, makeRSV);
+
+                return null;
+            }
+        }).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "Transaction success!" + makeRSV);
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Transaction failure.", e);
+                    }
+                });
+
+
+        buttons[rt][yoil].setText(user_name);
+        buttons[rt][yoil].setTextColor(Color.parseColor("#eeeeee"));
+        buttons[rt][yoil].setBackgroundColor(getResources().getColor(R.color.colorAccent));
+
+        new AlertDialog.Builder(TimeTable.this).setTitle("You Reserved").show();
     }
 
-    private void readtrainer() {
-        DocumentReference contact = db.collection("customer").document(user_id);
+    private void readTrainer() {
+        DocumentReference contact=db.collection("customerList").document(user_id);
         contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
-                    DocumentSnapshot doc = task.getResult();
-                    Log.d(TAG, doc.getId() + " => " + doc.getData());
-                    user_name = doc.getString("name");
-                    trainer = doc.getString("mappedtrainer");
-                    Toast.makeText(TimeTable.this,trainer, Toast.LENGTH_SHORT).show();
-                    // Toast.makeText(TimeTable.this,"전달:"+trainer,Toast.LENGTH_SHORT).show();
-                    // txtDisplay.setText(data.toString());*/
+                if(task.isSuccessful()) {
+                    DocumentSnapshot doc=task.getResult();
+                    Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                    trainer=doc.getString("trainer");
 
-
-                    DocumentReference contace2 = db.collection("customer").document(trainer).collection("scheduler").document("scheduler");
-                    contace2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    DocumentReference ref=db.collection("customerList").document(trainer);
+                    ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             if(task.isSuccessful());
-                            DocumentSnapshot doc2 = task.getResult();
-                            Log.d(TAG, doc2.getId() + " => " + doc2.getData());
-                            Log.d(TAG,"check:"+doc2.get("mon"));
-                            String temp = doc2.get("mon").toString();
-                            String monday[] = new String[14];
-                            readscheduler(monday,temp);
+                            DocumentSnapshot docC=task.getResult();
+                            Log.d(TAG, docC.getId() + " => " + docC.getData());
+                            trainerName=docC.getString("name");
 
-                            String tuseday[] = new String[14];
-                            temp = doc2.get("tue").toString();
-                            readscheduler(tuseday,temp);
-
-                            String wednesday[] = new String[14];
-                            temp = doc2.get("wed").toString();
-                            readscheduler(wednesday,temp);
-
-                            String thursday[] = new String[14];
-                            temp = doc2.get("thr").toString();
-                            readscheduler(thursday,temp);
-
-                            String friday[] = new String[14];
-                            temp = doc2.get("fri").toString();
-                            readscheduler(friday,temp);
-
-                            String saturday[] = new String[14];
-                            temp = doc2.get("sat").toString();
-                            readscheduler(saturday,temp);
-
-                            String sunday[] = new String[14];
-                            temp = doc2.get("sun").toString();
-                            readscheduler(sunday,temp);
-
-                         /*   StringBuilder id  = new StringBuilder("");
-                           for(int i=0;i<temp.length();i++){
-                               if(temp.charAt(i)=='['|| temp.charAt(i)==']'|| temp.charAt(i)==' ')
-                                   continue;
-                               Log.d(TAG,temp.charAt(i)+" ");
-                           }*/
-
-                        /*   int j=0;
-                           for(int i=0;i<14;i++){
-                               StringBuilder reservation = new StringBuilder("");
-                               for(;j<temp.length();j++){
-                                   if(temp.charAt(j)=='['|| temp.charAt(j)==']'){
-                                       continue;
-                                   }
-
-                                  else if(temp.charAt(j) !=','){
-                                       reservation.append(temp.charAt(j));
-                                   }
-
-                               }
-                               monday[i] = reservation.toString();
-                           }*/
-
-                            for(int i=0;i<14;i++) {
-                                Log.d(TAG,monday[i]);
-                                mon[i].setText(monday[i]);
-                                mon[i].setTextColor(Color.parseColor("#000000"));
-                                if(monday[i].length() > 3){
-                                   // mon[i].setBackgroundColor(Color.parseColor("#FF0000"));
-                                    mon[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
-                                }
-
-
-                                tue[i].setText(tuseday[i]);
-                                tue[i].setTextColor(Color.parseColor("#000000"));
-                                if(tuseday[i].length() > 3){
-                                   // tue[i].setBackgroundColor(Color.parseColor("#FF0000"));
-                                    tue[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
-
-                                }
-
-                                wed[i].setText(wednesday[i]);
-                                wed[i].setTextColor(Color.parseColor("#000000"));
-                                if(wednesday[i].length() > 3){
-                                   // wed[i].setBackgroundColor(Color.parseColor("#FF0000"));
-                                    wed[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
-                                }
-
-                                thr[i].setText(thursday[i]);
-                                thr[i].setTextColor(Color.parseColor("#000000"));
-                                if(thursday[i].length() > 3){
-                                   // thr[i].setBackgroundColor(Color.parseColor("#FF0000"));
-                                    thr[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
-                                }
-
-                                fri[i].setText(friday[i]);
-                                fri[i].setTextColor(Color.parseColor("#000000"));
-                                if(friday[i].length() > 3){
-                                    //fri[i].setBackgroundColor(Color.parseColor("#FF0000"));
-                                    fri[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
-                                }
-
-                                sat[i].setText(saturday[i]);
-                                sat[i].setTextColor(Color.parseColor("#000000"));
-                                if(saturday[i].length() > 3){
-                                   // sat[i].setBackgroundColor(Color.parseColor("#FF0000"));
-                                    sat[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
-                                }
-
-                                sun[i].setText(sunday[i]);
-                                sun[i].setTextColor(Color.parseColor("#000000"));
-                                if(sunday[i].length() > 3){
-                                   // sun[i].setBackgroundColor(Color.parseColor("#FF0000"));
-                                    sun[i].setBackgroundColor(getResources().getColor(R.color.colorpink));
-                                }
-
-                            }
-
-
+                            String s="Trainer: " + trainerName;
+                            TextView showTrainer=(TextView)findViewById(R.id.textViewTrainer);
+                            showTrainer.setText(s);
                         }
                     });
 
+                    DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                    contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if(task.isSuccessful());
+                            DocumentSnapshot doc2=task.getResult();
+                            Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                            Log.d(TAG,"check:"+doc2.get("mon"));
+                            String temp;
+                            String weekDay[][] = new String[7][13];
 
+                            temp= doc2.get("Mon").toString();
+                            readSchedule(weekDay[0],temp);
+
+                            temp= doc2.get("Tue").toString();
+                            readSchedule(weekDay[1],temp);
+
+                            temp= doc2.get("Wed").toString();
+                            readSchedule(weekDay[2],temp);
+
+                            temp= doc2.get("Thu").toString();
+                            readSchedule(weekDay[3],temp);
+
+                            temp= doc2.get("Fri").toString();
+                            readSchedule(weekDay[4],temp);
+
+                            temp= doc2.get("Sat").toString();
+                            readSchedule(weekDay[5],temp);
+
+                            temp= doc2.get("Sun").toString();
+                            readSchedule(weekDay[6],temp);
+
+                            for(int i=0; i<13; i++) {
+                                for(int j=0; j<7; j++) {
+                                    buttons[i][j].setText(weekDay[j][i]);
+                                    buttons[i][j].setTextColor(Color.parseColor("#eeeeee")); //
+                                    if(weekDay[j][i].length()>1) {
+                                        buttons[i][j].setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
             }
         });
-
-
     }
 
-    private void readscheduler(String[] day,String temp){
+    private void readSchedule(String[] weekDay, String temp) {
         int j=0;
-        for(int i=0;i<14;i++){
-            StringBuilder reservation = new StringBuilder("");
+        for(int i=0; i<13; i++) {
+            StringBuilder member=new StringBuilder("");
 
-            for(;j<temp.length();j++){
-                if(temp.charAt(j)=='['|| temp.charAt(j)==']'){
+            for(; j<temp.length(); j++) {
+                if(temp.charAt(j)=='[' || temp.charAt(j)==']') {
                     continue;
                 }
-                if(temp.charAt(j)==','){
+                if(temp.charAt(j)==',') {
                     j++;
                     break;
                 }
-                else if(temp.charAt(j) !=',' || temp.charAt(j)==' ' ){
-                    reservation.append(temp.charAt(j));
+                else {
+                    member.append(temp.charAt(j));
                 }
-
             }
-            day[i] = reservation.toString();
+            weekDay[i] = member.toString();
         }
     }
-    private void readTextView(){
-        mon[0] = (TextView) findViewById(R.id.mon0);
-        mon[1] = (TextView) findViewById(R.id.mon1);
-        mon[2] = (TextView) findViewById(R.id.mon2);
-        mon[3] = (TextView) findViewById(R.id.mon3);
-        mon[4] = (TextView) findViewById(R.id.mon4);
-        mon[5] = (TextView) findViewById(R.id.mon5);
-        mon[6] = (TextView) findViewById(R.id.mon6);
-        mon[7] = (TextView) findViewById(R.id.mon7);
-        mon[8] = (TextView) findViewById(R.id.mon8);
-        mon[9] = (TextView) findViewById(R.id.mon9);
-        mon[10] = (TextView) findViewById(R.id.mon10);
-        mon[11] = (TextView) findViewById(R.id.mon11);
-        mon[12] = (TextView) findViewById(R.id.mon12);
-        mon[13] = (TextView) findViewById(R.id.mon13);
 
-        tue[0] = (TextView) findViewById(R.id.tue0);
-        tue[1] = (TextView) findViewById(R.id.tue1);
-        tue[2] = (TextView) findViewById(R.id.tue2);
-        tue[3] = (TextView) findViewById(R.id.tue3);
-        tue[4] = (TextView) findViewById(R.id.tue4);
-        tue[5] = (TextView) findViewById(R.id.tue5);
-        tue[6] = (TextView) findViewById(R.id.tue6);
-        tue[7] = (TextView) findViewById(R.id.tue7);
-        tue[8] = (TextView) findViewById(R.id.tue8);
-        tue[9] = (TextView) findViewById(R.id.tue9);
-        tue[10] = (TextView) findViewById(R.id.tue10);
-        tue[11] = (TextView) findViewById(R.id.tue11);
-        tue[12] = (TextView) findViewById(R.id.tue12);
-        tue[13] = (TextView) findViewById(R.id.tue13);
+    private void readButtons() {
 
-        wed[0] = (TextView) findViewById(R.id.wed0);
-        wed[1] = (TextView) findViewById(R.id.wed1);
-        wed[2] = (TextView) findViewById(R.id.wed2);
-        wed[3] = (TextView) findViewById(R.id.wed3);
-        wed[4] = (TextView) findViewById(R.id.wed4);
-        wed[5] = (TextView) findViewById(R.id.wed5);
-        wed[6] = (TextView) findViewById(R.id.wed6);
-        wed[7] = (TextView) findViewById(R.id.wed7);
-        wed[8] = (TextView) findViewById(R.id.wed8);
-        wed[9] = (TextView) findViewById(R.id.wed9);
-        wed[10] = (TextView) findViewById(R.id.wed10);
-        wed[11] = (TextView) findViewById(R.id.wed11);
-        wed[12] = (TextView) findViewById(R.id.wed12);
-        wed[13] = (TextView) findViewById(R.id.wed13);
+        buttons[0][0]=(Button)findViewById(R.id.buttonMon8);
+        buttons[0][1]=(Button)findViewById(R.id.buttonTue8);
+        buttons[0][2]=(Button)findViewById(R.id.buttonWed8);
+        buttons[0][3]=(Button)findViewById(R.id.buttonThu8);
+        buttons[0][4]=(Button)findViewById(R.id.buttonFri8);
+        buttons[0][5]=(Button)findViewById(R.id.buttonSat8);
+        buttons[0][6]=(Button)findViewById(R.id.buttonSun8);
 
-        thr[0] = (TextView) findViewById(R.id.thu0);
-        thr[1] = (TextView) findViewById(R.id.thu1);
-        thr[2] = (TextView) findViewById(R.id.thu2);
-        thr[3] = (TextView) findViewById(R.id.thu3);
-        thr[4] = (TextView) findViewById(R.id.thu4);
-        thr[5] = (TextView) findViewById(R.id.thu5);
-        thr[6] = (TextView) findViewById(R.id.thu6);
-        thr[7] = (TextView) findViewById(R.id.thu7);
-        thr[8] = (TextView) findViewById(R.id.thu8);
-        thr[9] = (TextView) findViewById(R.id.thu9);
-        thr[10] = (TextView) findViewById(R.id.thu10);
-        thr[11] = (TextView) findViewById(R.id.thu11);
-        thr[12] = (TextView) findViewById(R.id.thu12);
-        thr[13] = (TextView) findViewById(R.id.thu13);
+        buttons[1][0]=(Button)findViewById(R.id.buttonMon9);
+        buttons[1][1]=(Button)findViewById(R.id.buttonTue9);
+        buttons[1][2]=(Button)findViewById(R.id.buttonWed9);
+        buttons[1][3]=(Button)findViewById(R.id.buttonThu9);
+        buttons[1][4]=(Button)findViewById(R.id.buttonFri9);
+        buttons[1][5]=(Button)findViewById(R.id.buttonSat9);
+        buttons[1][6]=(Button)findViewById(R.id.buttonSun9);
 
-        fri[0] = (TextView) findViewById(R.id.fri0);
-        fri[1] = (TextView) findViewById(R.id.fri1);
-        fri[2] = (TextView) findViewById(R.id.fri2);
-        fri[3] = (TextView) findViewById(R.id.fri3);
-        fri[4] = (TextView) findViewById(R.id.fri4);
-        fri[5] = (TextView) findViewById(R.id.fri5);
-        fri[6] = (TextView) findViewById(R.id.fri6);
-        fri[7] = (TextView) findViewById(R.id.fri7);
-        fri[8] = (TextView) findViewById(R.id.fri8);
-        fri[9] = (TextView) findViewById(R.id.fri9);
-        fri[10] = (TextView) findViewById(R.id.fri10);
-        fri[11] = (TextView) findViewById(R.id.fri11);
-        fri[12] = (TextView) findViewById(R.id.fri12);
-        fri[13] = (TextView) findViewById(R.id.fri13);
+        buttons[2][0]=(Button)findViewById(R.id.buttonMon10);
+        buttons[2][1]=(Button)findViewById(R.id.buttonTue10);
+        buttons[2][2]=(Button)findViewById(R.id.buttonWed10);
+        buttons[2][3]=(Button)findViewById(R.id.buttonThu10);
+        buttons[2][4]=(Button)findViewById(R.id.buttonFri10);
+        buttons[2][5]=(Button)findViewById(R.id.buttonSat10);
+        buttons[2][6]=(Button)findViewById(R.id.buttonSun10);
 
-        sat[0] = (TextView) findViewById(R.id.sat0);
-        sat[1] = (TextView) findViewById(R.id.sat1);
-        sat[2] = (TextView) findViewById(R.id.sat2);
-        sat[3] = (TextView) findViewById(R.id.sat3);
-        sat[4] = (TextView) findViewById(R.id.sat4);
-        sat[5] = (TextView) findViewById(R.id.sat5);
-        sat[6] = (TextView) findViewById(R.id.sat6);
-        sat[7] = (TextView) findViewById(R.id.sat7);
-        sat[8] = (TextView) findViewById(R.id.sat8);
-        sat[9] = (TextView) findViewById(R.id.sat9);
-        sat[10] = (TextView) findViewById(R.id.sat10);
-        sat[11] = (TextView) findViewById(R.id.sat11);
-        sat[12] = (TextView) findViewById(R.id.sat12);
-        sat[13] = (TextView) findViewById(R.id.sat13);
+        buttons[3][0]=(Button)findViewById(R.id.buttonMon11);
+        buttons[3][1]=(Button)findViewById(R.id.buttonTue11);
+        buttons[3][2]=(Button)findViewById(R.id.buttonWed11);
+        buttons[3][3]=(Button)findViewById(R.id.buttonThu11);
+        buttons[3][4]=(Button)findViewById(R.id.buttonFri11);
+        buttons[3][5]=(Button)findViewById(R.id.buttonSat11);
+        buttons[3][6]=(Button)findViewById(R.id.buttonSun11);
 
-        sun[0] = (TextView) findViewById(R.id.sun0);
-        sun[1] = (TextView) findViewById(R.id.sun1);
-        sun[2] = (TextView) findViewById(R.id.sun2);
-        sun[3] = (TextView) findViewById(R.id.sun3);
-        sun[4] = (TextView) findViewById(R.id.sun4);
-        sun[5] = (TextView) findViewById(R.id.sun5);
-        sun[6] = (TextView) findViewById(R.id.sun6);
-        sun[7] = (TextView) findViewById(R.id.sun7);
-        sun[8] = (TextView) findViewById(R.id.sun8);
-        sun[9] = (TextView) findViewById(R.id.sun9);
-        sun[10] = (TextView) findViewById(R.id.sun10);
-        sun[11] = (TextView) findViewById(R.id.sun11);
-        sun[12] = (TextView) findViewById(R.id.sun12);
-        sun[13] = (TextView) findViewById(R.id.sun13);
+        buttons[4][0]=(Button)findViewById(R.id.buttonMon12);
+        buttons[4][1]=(Button)findViewById(R.id.buttonTue12);
+        buttons[4][2]=(Button)findViewById(R.id.buttonWed12);
+        buttons[4][3]=(Button)findViewById(R.id.buttonThu12);
+        buttons[4][4]=(Button)findViewById(R.id.buttonFri12);
+        buttons[4][5]=(Button)findViewById(R.id.buttonSat12);
+        buttons[4][6]=(Button)findViewById(R.id.buttonSun12);
 
+        buttons[5][0]=(Button)findViewById(R.id.buttonMon13);
+        buttons[5][1]=(Button)findViewById(R.id.buttonTue13);
+        buttons[5][2]=(Button)findViewById(R.id.buttonWed13);
+        buttons[5][3]=(Button)findViewById(R.id.buttonThu13);
+        buttons[5][4]=(Button)findViewById(R.id.buttonFri13);
+        buttons[5][5]=(Button)findViewById(R.id.buttonSat13);
+        buttons[5][6]=(Button)findViewById(R.id.buttonSun13);
+
+        buttons[6][0]=(Button)findViewById(R.id.buttonMon14);
+        buttons[6][1]=(Button)findViewById(R.id.buttonTue14);
+        buttons[6][2]=(Button)findViewById(R.id.buttonWed14);
+        buttons[6][3]=(Button)findViewById(R.id.buttonThu14);
+        buttons[6][4]=(Button)findViewById(R.id.buttonFri14);
+        buttons[6][5]=(Button)findViewById(R.id.buttonSat14);
+        buttons[6][6]=(Button)findViewById(R.id.buttonSun14);
+
+        buttons[7][0]=(Button)findViewById(R.id.buttonMon15);
+        buttons[7][1]=(Button)findViewById(R.id.buttonTue15);
+        buttons[7][2]=(Button)findViewById(R.id.buttonWed15);
+        buttons[7][3]=(Button)findViewById(R.id.buttonThu15);
+        buttons[7][4]=(Button)findViewById(R.id.buttonFri15);
+        buttons[7][5]=(Button)findViewById(R.id.buttonSat15);
+        buttons[7][6]=(Button)findViewById(R.id.buttonSun15);
+
+        buttons[8][0]=(Button)findViewById(R.id.buttonMon16);
+        buttons[8][1]=(Button)findViewById(R.id.buttonTue16);
+        buttons[8][2]=(Button)findViewById(R.id.buttonWed16);
+        buttons[8][3]=(Button)findViewById(R.id.buttonThu16);
+        buttons[8][4]=(Button)findViewById(R.id.buttonFri16);
+        buttons[8][5]=(Button)findViewById(R.id.buttonSat16);
+        buttons[8][6]=(Button)findViewById(R.id.buttonSun16);
+
+        buttons[9][0]=(Button)findViewById(R.id.buttonMon17);
+        buttons[9][1]=(Button)findViewById(R.id.buttonTue17);
+        buttons[9][2]=(Button)findViewById(R.id.buttonWed17);
+        buttons[9][3]=(Button)findViewById(R.id.buttonThu17);
+        buttons[9][4]=(Button)findViewById(R.id.buttonFri17);
+        buttons[9][5]=(Button)findViewById(R.id.buttonSat17);
+        buttons[9][6]=(Button)findViewById(R.id.buttonSun17);
+
+        buttons[10][0]=(Button)findViewById(R.id.buttonMon18);
+        buttons[10][1]=(Button)findViewById(R.id.buttonTue18);
+        buttons[10][2]=(Button)findViewById(R.id.buttonWed18);
+        buttons[10][3]=(Button)findViewById(R.id.buttonThu18);
+        buttons[10][4]=(Button)findViewById(R.id.buttonFri18);
+        buttons[10][5]=(Button)findViewById(R.id.buttonSat18);
+        buttons[10][6]=(Button)findViewById(R.id.buttonSun18);
+
+        buttons[11][0]=(Button)findViewById(R.id.buttonMon19);
+        buttons[11][1]=(Button)findViewById(R.id.buttonTue19);
+        buttons[11][2]=(Button)findViewById(R.id.buttonWed19);
+        buttons[11][3]=(Button)findViewById(R.id.buttonThu19);
+        buttons[11][4]=(Button)findViewById(R.id.buttonFri19);
+        buttons[11][5]=(Button)findViewById(R.id.buttonSat19);
+        buttons[11][6]=(Button)findViewById(R.id.buttonSun19);
+
+        buttons[12][0]=(Button)findViewById(R.id.buttonMon20);
+        buttons[12][1]=(Button)findViewById(R.id.buttonTue20);
+        buttons[12][2]=(Button)findViewById(R.id.buttonWed20);
+        buttons[12][3]=(Button)findViewById(R.id.buttonThu20);
+        buttons[12][4]=(Button)findViewById(R.id.buttonFri20);
+        buttons[12][5]=(Button)findViewById(R.id.buttonSat20);
+        buttons[12][6]=(Button)findViewById(R.id.buttonSun20);
 
     }
 
-    @Override
-    @Deprecated
-    protected Dialog onCreateDialog(final int id) {
-        // 다이얼로그를 처음 생성할 때 호출됨
-        Log.d("test", "onCreateDialog");
+    private void setButtonsListener() {
+        buttons[0][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
 
-        // id 값에 따라서 다이얼로그를 구분해서 띄워줌
-                // 버튼 클릭시 AlertDialog 를 띄우기
-                AlertDialog.Builder builder
-                        = new AlertDialog.Builder(TimeTable.this);
-                builder
-                        .setMessage("예약하시겠습니까?")
-                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                temp = which;
-                                Toast.makeText(getApplicationContext(),
-                                        user_name + "으로 예약하겠슴",
-                                        Toast.LENGTH_SHORT).show();
-                                TextView txt = (TextView) findViewById(id);
-                                txt.setText(user_name);
-                                txt.setBackgroundColor(getResources().getColor(R.color.colorpink));
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
 
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 0, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[1][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
 
-                            }
-                        })
-                        .setNegativeButton("예약취소", null)
-                        .setNeutralButton("취소", null);
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
 
-                return builder.create();
-        //return super.onCreateDialog(id);
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 1, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[2][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 2, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[3][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 3, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[4][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 4, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[5][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 5, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[6][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 6, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[7][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 7, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[8][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 8, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[9][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 9, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[10][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 10, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[11][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 11, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[12][0].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Mon").toString();
+                                        makeReservation("Mon", 12, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        buttons[0][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 0, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[1][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 1, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[2][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 2, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[3][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 3, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[4][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 4, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[5][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 5, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[6][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 6, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[7][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 7, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[8][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 8, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[9][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 9, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[10][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 10, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[11][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 11, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[12][1].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Tue").toString();
+                                        makeReservation("Tue", 12, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        buttons[0][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 0, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[1][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 1, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[2][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 2, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[3][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 3, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[4][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 4, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[5][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 5, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[6][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 6, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[7][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 7, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[8][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 8, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[9][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 9, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[10][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 10, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[11][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 11, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[12][2].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Wed").toString();
+                                        makeReservation("Wed", 12, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        buttons[0][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 0, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[1][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 1, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[2][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 2, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[3][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 3, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[4][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 4, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[5][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 5, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[6][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 6, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[7][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 7, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[8][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 8, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[9][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 9, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[10][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 10, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[11][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 11, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[12][3].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Thu").toString();
+                                        makeReservation("Thu", 12, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        buttons[0][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 0, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[1][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 1, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[2][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 2, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[3][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 3, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[4][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 4, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[5][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 5, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[6][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 6, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[7][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 7, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[8][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 8, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[9][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 9, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[10][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 10, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[11][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 11, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[12][4].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Fri").toString();
+                                        makeReservation("Fri", 12, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        buttons[0][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 0, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[1][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 1, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[2][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 2, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[3][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 3, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[4][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 4, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[5][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 5, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[6][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 6, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[7][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 7, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[8][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 8, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[9][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 9, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[10][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 10, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[11][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 11, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[12][5].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sat").toString();
+                                        makeReservation("Sat", 12, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        buttons[0][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 0, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[1][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 1, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[2][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 2, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[3][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 3, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[4][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 4, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[5][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 5, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[6][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 6, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[7][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 7, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[8][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 8, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[9][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 9, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[10][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 10, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[11][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 11, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        buttons[12][6].setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                DocumentReference contact=db.collection("customerList").document(user_id);
+                contact.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DocumentSnapshot doc=task.getResult();
+                            Log.d(TAG, doc.getId() + "=>" + doc.getData());
+                            trainer=doc.getString("trainer");
+
+                            DocumentReference contact2=db.collection("customerList").document(trainer).collection("schedule").document("schedule");
+                            contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        DocumentSnapshot doc2 = task.getResult();
+                                        Log.d(TAG, doc2.getId() + " => " + doc2.getData());
+                                        String temp;
+
+                                        temp = doc2.get("Sun").toString();
+                                        makeReservation("Sun", 12, temp);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
     }
-
-
-
 }
