@@ -103,9 +103,6 @@ public class ChatActivity extends AppCompatActivity {
                     SimpleDateFormat df = new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss"));
                     String formattedDate = df.format(c.getTime());
 
-
-                    //DatabaseReference myRef = database.getReference("chatdata").child(formattedDate);
-                    //DatabaseReference myRef = database.getReference("users").child(user_key).child("chatdata").child(formattedDate);
                     DatabaseReference myRef = database.getReference("users").child(user_key).child(partener_key).child("chatdata").child(formattedDate);
 
                     Hashtable<String, String> chat
@@ -142,7 +139,7 @@ public class ChatActivity extends AppCompatActivity {
         mAdapter = new MyAdapter(mChatdata,user_id);
         mRecyclerView.setAdapter(mAdapter);
 
-        //DatabaseReference myRef = database.getReference("users").child(user_key).child("chatdata");
+
     }
     private void readchat() {
         DatabaseReference myRef = database.getReference("users").child(user_key).child(partener_key).child("chatdata");
