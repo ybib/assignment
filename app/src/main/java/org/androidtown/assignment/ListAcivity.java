@@ -67,8 +67,17 @@ public class ListAcivity extends AppCompatActivity {
                         StringBuilder data = new StringBuilder("");
                         data.append("member: ").append(doc.getString("member1"));
                         partener = doc.getString("member1");
-                        partner_name = doc.getString("name");
-                        txtDisplay.setText(partner_name);
+                        DocumentReference contact2 = db.collection("customerList").document(partener);
+                        contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if(task.isSuccessful()){
+                                    DocumentSnapshot doc = task.getResult();
+                                    partner_name = doc.getString("name");
+                                    txtDisplay.setText(partner_name);
+                                }
+                            }
+                        });
                     }
                     else{
                         readSingleContact();
@@ -94,11 +103,26 @@ public class ListAcivity extends AppCompatActivity {
                     // data.append("\nEmail:").append(doc.getString("email"));
                     //  data.append("\nPhone:").append(doc.getString("phone"));
                     partener = doc.getString("trainer");
-                    partner_name = doc.getString("name");
-                    txtDisplay.setText(partner_name);
+                    DocumentReference contact2 = db.collection("customerList").document(partener);
+                    contact2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if(task.isSuccessful()){
+                                DocumentSnapshot doc = task.getResult();
+                                partner_name = doc.getString("name");
+                                txtDisplay.setText(partner_name);
+                            }
+                        }
+                    });
+                  //  partner_name = doc.getString("name");
+                    txtDisplay.setText(partener);
                 }
             }
         });
+
+
+
+
     }
 
 }
